@@ -1,0 +1,115 @@
+const path = require('path');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+const assets = [
+    {
+        from: path.resolve(__dirname, '../assets'),
+        to: 'assets',
+    }
+];
+
+module.exports = (env, argv) => {
+    const plugins = [
+        new CleanWebpackPlugin(),
+        new MiniCssExtractPlugin(),
+        new CopyWebpackPlugin({patterns: [...assets]}),
+        new HtmlWebpackPlugin({
+            filename: 'index.html',
+            template: path.resolve(__dirname, '../index.html'),
+        }),
+    ];
+    if (argv.mode === 'production') {
+        console.log('Production build');
+    }
+    return {
+        entry: {
+            app: path.resolve(__dirname, '../src/app.js'),
+        },
+        watchOptions: {
+            poll: true,
+            ignored: /node_modules/,
+        },
+        output: {
+            path: path.join(__dirname, '../build'),
+            filename: '[name].[chunkhash:8].js',
+            clean: true,
+        },
+        devServer: {
+            port: 3000,
+            historyApiFallback: true,
+        },
+        optimization: {
+            moduleIds: 'deterministic',
+            splitChunks: {
+                chunks: 'all',
+                name: false,
+                cacheGroups: {
+                    components: {
+                        test: /[\\/]src[\\/](common|components)[\\/]/,
+                        name: 'components',
+                        chunks: 'all',
+                    },
+                    deps: {
+                        test: /[\\/]node_modules[\\/](canvas-confetti|lit-element|lit-html|lit-translate)[\\/]/,
+                        name: 'deps',
+                        chunks: 'all',
+                    },
+                },
+            },
+        },
+        plugins,
+        module: {
+            rules: [
+                {
+                    test: /\.(js)$/,
+                    exclude: /node_modules/,
+                    use: 'babel-loader',
+                },
+                {
+                    test: /\.(js)$/,
+                    exclude: /node_modules/,
+                    loader: path.resolve(path.join(__dirname, 'minify-plugin.js')),
+                },
+            ],
+        },
+    };
+};
+
+"scripts": {
+    "build": "webpack --mode=production --config webpack/webpack.config.js",
+    "dev": "webpack serve --mode=development --config webpack/webpack.config.js"
+  },
+  "dependencies": {
+    "@webcomponents/webcomponentsjs": "2.6.0",
+    "lit-element": "2.5.1",
+    "lit-html": "^1.0.0",
+    "lit-translate": "^2.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.2",
+    "@babel/node": "^7.10.1",
+    "@babel/plugin-proposal-class-properties": "^7.10.1",
+    "@babel/plugin-proposal-object-rest-spread": "^7.10.1",
+    "@babel/plugin-proposal-optional-chaining": "^7.10.1",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/preset-env": "^7.10.2",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^2.0.1",
+    "copy-webpack-plugin": "6.4.1",
+    "css-loader": "^6.7.3",
+    "html-webpack-plugin": "^4.0.0-beta.2",
+    "mini-css-extract-plugin": "^2.7.6",
+    "sinon": "^15.2.0",
+    "style-loader": "^0.23.1",
+    "terser-webpack-plugin": "^2.2.3",
+    "webpack": "^5.88.2",
+    "webpack-cli": "5.0.1",
+    "webpack-dev-server": "^4.15.1",
+    "workbox-webpack-plugin": "^7.0.0"
+  }
+
+
+
