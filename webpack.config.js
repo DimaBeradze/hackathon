@@ -35,6 +35,14 @@ module.exports = {
     static: {
       directory: path.join(__dirname, 'public'),
     },
+    proxy: {
+      '/b2b/similarity': {
+        target: 'https://b2b.loupefy.com',
+        changeOrigin: true,
+        secure: false,
+        pathRewrite: {'^/b2b/similarity' : ''}
+      }
+    },
     compress: true,
     port: 8080,
   }
